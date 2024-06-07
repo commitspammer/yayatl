@@ -1,0 +1,20 @@
+{{ block "todo" . }}
+<li
+    class="p-2 border-b rounded border-teal-100 flex items-center justify-between"
+>
+    <label> {{ .Description }} </label>
+    <input
+        type="checkbox"
+        name="done"
+        hx-post="/todos/{{ .Id }}"
+        {{
+        if
+        .Done
+        }}
+        checked
+        {{
+        end
+        }}
+    />
+</li>
+{{ end }}
