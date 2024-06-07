@@ -16,5 +16,11 @@
         end
         }}
     />
+    <button hx-get="/todos/{{ .Id }}/edit" hx-target="#todo-{{ .Id }}" class="h-10 rounded px-8 bg-blue-500 text-blue-50">
+        Edit
+    </button>
+    <button hx-post="/todos/{{ .Id }}/delete" hx-target="#todos" hx-swap="outerHTML" class="h-10 rounded px-8 bg-red-500 text-red-50">
+        Remove
+    </button>
 </li>
 {{ end }}

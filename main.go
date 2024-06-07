@@ -1,6 +1,7 @@
 package main
 
 import (
+    "net/http"
     "html/template"
     "io"
     "log"
@@ -64,6 +65,30 @@ func main() {
             }
         }
         return c.Render(200, "index", todos)
+    })
+
+    e.POST("/todos/:id/delete", func(c echo.Context) error {
+        idStr := c.Param("id")
+        id, _ := strconv.Atoi(idStr)
+        for i, todo := range todos["Todos"] {
+            if id == todo.Id {
+                // Remove the todo from the list
+                todos["Todos"] = append(todos["Todos"][:i], todos["Todos"][i+1:]...)
+                break
+            }
+        }
+        return c.Render(200, "todos", todos)
+    })
+
+    e.GET("/todos/:id/edit", func(c echo.Context) error {
+        idStr := c.Param("id")
+        id, _ := strconv.Atoi(idStr)
+        for _, todo := range todos["Todos"] {
+            if id == todo.Id {
+                return c.Render(200, "edit-form", todo)
+            }
+        }
+        return echo.NewHTTPError(http.StatusNotFound, "Todo not found")
     })
 
     e.Logger.Fatal(e.Start(":8080"))

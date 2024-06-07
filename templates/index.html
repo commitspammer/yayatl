@@ -29,6 +29,16 @@
             {{ range .Todos }} {{ template "todo" . }} {{ end }}
         </ul>
 
+        <form id="edit-form" hx-post="/todos/:id" hx-target="#todos" hx-swap="outerHTML" class="flex gap-2 items-end">
+            <div class="flex flex-col gap-1 flex-1">
+                <label for="description">Description</label>
+                <input type="text" name="description" class="h-10 border border-slate-100" />
+            </div>
+            <button type="submit" class="h-10 rounded px-8 bg-blue-500 text-blue-50">
+                Update
+            </button>
+        </form>
+
         <form
             hx-post="/todos"
             hx-target="#todos"
