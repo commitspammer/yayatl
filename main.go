@@ -1,21 +1,13 @@
 package main
 
 import (
-    "net/http"
     "html/template"
     "io"
     "log"
     "strconv"
-
     "github.com/labstack/echo/v4"
     "github.com/labstack/echo/v4/middleware"
 )
-
-type Todo struct {
-    Description string
-    Id          int
-    Done        bool
-}
 
 type Templates struct {
     templates *template.Template
@@ -31,64 +23,77 @@ func newTemplate() *Templates {
     }
 }
 
+type Todo struct {
+    Description string
+    Id          int
+    Done        bool
+}
+
 func main() {
     e := echo.New()
     e.Use(middleware.Logger())
     e.Use(middleware.Recover())
-
     e.Renderer = newTemplate()
+    e.File("/favicon.ico", "assets/favicon.ico")
 
-    todos := map[string][]Todo{
+    state := map[string][]Todo{
         "Todos": {
-            {Description: "Learn Go", Id: 1, Done: false},
-            {Description: "Build a web app", Id: 2, Done: false},
-            {Description: "Profit", Id: 3, Done: false},
+            { Description: "Learn HTMX",     Id: 1, Done: false },
+            { Description: "Build a Go app", Id: 2, Done: false },
+            { Description: "Profit",         Id: 3, Done: false },
         },
     }
+
     e.GET("/", func(c echo.Context) error {
-        return c.Render(200, "index", todos)
+        return c.Render(200, "index", state)
     })
 
     e.POST("/todos", func(c echo.Context) error {
         description := c.FormValue("description")
-        todos["Todos"] = append(todos["Todos"], Todo{Description: description, Id: len(todos["Todos"]) + 1, Done: false})
-        return c.Render(200, "todo", todos["Todos"][len(todos["Todos"])-1])
+        state["Todos"] = append(state["Todos"], Todo{
+            Description: description,
+            Id: len(state["Todos"]) + 1,
+            Done: false,
+        })
+        return c.Render(200, "todo", state["Todos"][len(state["Todos"])-1])
     })
 
-    e.POST("/todos/:id", func(c echo.Context) error {
+    e.PUT("/todos/:id/done", func(c echo.Context) error {
         idStr := c.Param("id")
         id, _ := strconv.Atoi(idStr)
-        for i, todo := range todos["Todos"] {
+        for i, todo := range state["Todos"] {
             if id == todo.Id {
                 log.Print("found")
-                todos["Todos"][i].Done = !todos["Todos"][i].Done
+                state["Todos"][i].Done = !state["Todos"][i].Done
             }
         }
-        return c.Render(200, "index", todos)
+        return c.Render(200, "index", state)
     })
 
-    e.POST("/todos/:id/delete", func(c echo.Context) error {
+    e.PUT("/todos/:id/description", func(c echo.Context) error {
+        description := c.FormValue("description")
         idStr := c.Param("id")
         id, _ := strconv.Atoi(idStr)
-        for i, todo := range todos["Todos"] {
+        for i, todo := range state["Todos"] {
+            if id == todo.Id {
+                log.Print("found")
+                state["Todos"][i].Description = description
+            }
+        }
+        return c.Render(200, "index", state)
+    })
+
+    e.DELETE("/todos/:id", func(c echo.Context) error {
+        idStr := c.Param("id")
+        id, _ := strconv.Atoi(idStr)
+        for i, todo := range state["Todos"] {
             if id == todo.Id {
                 // Remove the todo from the list
-                todos["Todos"] = append(todos["Todos"][:i], todos["Todos"][i+1:]...)
+                state["Todos"] = append(state["Todos"][:i], state["Todos"][i+1:]...)
                 break
             }
         }
-        return c.Render(200, "todos", todos)
-    })
-
-    e.GET("/todos/:id/edit", func(c echo.Context) error {
-        idStr := c.Param("id")
-        id, _ := strconv.Atoi(idStr)
-        for _, todo := range todos["Todos"] {
-            if id == todo.Id {
-                return c.Render(200, "edit-form", todo)
-            }
-        }
-        return echo.NewHTTPError(http.StatusNotFound, "Todo not found")
+        return c.String(200, "")
     })
 
     e.Logger.Fatal(e.Start(":8080"))
