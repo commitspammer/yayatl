@@ -14,6 +14,7 @@ type Templates struct {
 }
 
 func (t *Templates) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+    t.templates = template.Must(template.ParseGlob("templates/*.html")) // COMMENT THIS LINE IN PROD!
     return t.templates.ExecuteTemplate(w, name, data)
 }
 

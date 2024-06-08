@@ -1,9 +1,8 @@
 {{ block "todo" . }}
 <li
     id="todo-{{ .Id }}"
-    class="p-2 border-b rounded border-teal-100 flex items-center justify-between"
+    class="p-2 border-b rounded border-teal-100 flex items-center justify-between space-x-4"
 >
-    <label>{{ .Description }}</label>
     <input
         type="checkbox"
         name="done"
@@ -17,21 +16,24 @@
         end
         }}
     />
-    <button
-        hx-put="/todos/{{ .Id }}/description"
-        hx-target="#todo-{{ .Id }}"
-        hx-swap="outerHTML"
-        class="h-10 rounded px-8 bg-blue-500 text-blue-50"
-    >
-        Edit
-    </button>
-    <button
-        hx-delete="/todos/{{ .Id }}"
-        hx-target="#todo-{{ .Id }}"
-        hx-swap="outerHTML"
-        class="h-10 rounded px-8 bg-red-500 text-red-50"
-    >
-        Remove
-    </button>
+    <label>{{ .Description }}</label>
+    <div class="flex-1 flex justify-end space-x-2">
+        <button
+            hx-put="/todos/{{ .Id }}/description"
+            hx-target="#todo-{{ .Id }}"
+            hx-swap="outerHTML"
+            class="h-10 rounded px-8 bg-blue-500 text-blue-50"
+        >
+            Edit
+        </button>
+        <button
+            hx-delete="/todos/{{ .Id }}"
+            hx-target="#todo-{{ .Id }}"
+            hx-swap="outerHTML"
+            class="h-10 rounded px-8 bg-red-500 text-red-50"
+        >
+            Del
+        </button>
+    </div>
 </li>
 {{ end }}
