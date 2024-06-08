@@ -70,7 +70,7 @@ func main() {
                 return c.Render(200, "todo", state["Todos"][i])
             }
         }
-        return c.Render(404, "error", state) //error.html no exist
+        return c.String(404, "Not found")
     })
 
     e.PUT("/todos/:id/description", func(c echo.Context) error {
@@ -83,7 +83,7 @@ func main() {
                 return c.Render(200, "todo", state["Todos"][i])
             }
         }
-        return c.Render(404, "error", state) //error.html no exist
+        return c.String(404, "Not found")
     })
 
     e.DELETE("/todos/:id", func(c echo.Context) error {
@@ -106,7 +106,7 @@ func main() {
                 return c.Render(200, "edit-todo", todo)
             }
         }
-        return c.Render(404, "error", state) //error.html no exist
+        return c.String(404, "Not found")
     })
 
     e.Logger.Fatal(e.Start(":8080"))

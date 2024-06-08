@@ -7,47 +7,58 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <script src="https://unpkg.com/htmx.org@1.9.11"></script>
         <script src="https://cdn.tailwindcss.com"></script>
-        <script>
-            tailwind.config = {
-                theme: {
-                    extend: {
-                        colors: {
-                            clifford: "#da373d",
-                        },
-                    },
-                },
-            };
-        </script>
         <title>Yayatl</title>
     </head>
 
-    <body class="container py-12 px-4 mx-auto max-w-xl space-y-8 bg-gray-50">
-        <h1 class="text-2xl text-bold">Yet Another "Yet Another To-Do List"</h1>
-        <form
-            hx-post="/todos"
-            hx-target="#todos"
-            hx-swap="beforeend"
-            class="flex gap-2 items-end"
-        >
-            <div class="flex flex-col gap-1 flex-1">
-                <label for="description">Add new to-do</label>
-                <input
-                    type="text"
-                    name="description"
-                    class="h-10 px-3 rounded border border-slate-300"
-                />
-            </div>
-            <button type="submit" class="h-10 rounded px-8 bg-teal-500 text-teal-50">
-                Add
+    <body class="relative bg-gray-50">
+        <div id="errors" class="fixed top-0 right-0 px-6 py-3 m-4 rounded bg-yellow-500 border border-yellow-800 hidden">
+            <button
+                class="px-2 py-1 ml-2 rounded border border-yellow-800"
+                onclick="document.getElementById('errors').style.display='none'"
+            >
+                Ok
             </button>
-        </form>
-
-        <ul
-            class="space-y-4 p-4 rounded bg-teal-50 border border-teal-300 text-teal-950"
-            id="todos"
-        >
-            {{ range .Todos }} {{ template "todo" . }} {{ end }}
-        </ul>
+        </div>
+        <main class="container py-12 px-4 mx-auto max-w-xl space-y-8">
+            <h1 class="text-2xl">Yet Another "Yet Another To-Do List"</h1>
+            <form
+                hx-post="/todos"
+                hx-target="#todos"
+                hx-swap="beforeend"
+                class="flex gap-2 items-end"
+            >
+                <div class="flex flex-col gap-1 flex-1">
+                    <label for="description">Add new to-do</label>
+                    <input
+                        type="text"
+                        name="description"
+                        class="h-10 px-3 rounded border border-slate-300"
+                    />
+                </div>
+                <button type="submit" class="h-10 rounded px-8 bg-teal-500 text-teal-50">
+                    Add
+                </button>
+            </form>
+            <ul
+                class="space-y-4 p-4 rounded bg-teal-50 border border-teal-300 text-teal-950"
+                id="todos"
+            >
+                {{ range .Todos }} {{ template "todo" . }} {{ end }}
+            </ul>
+        </main>
     </body>
+
+    <script>
+        document.body.addEventListener('htmx:sendError', function(e) {
+            document.getElementById("errors").insertAdjacentHTML('afterbegin', 'Network error')
+            document.getElementById("errors").style.display = 'block'
+        })
+        document.body.addEventListener('htmx:responseError', function(e) {
+            e.detail.shouldSwap = true             //allow swap
+            //e.detail.isError = false             //prevent logging
+            e.detail.target = htmx.find("#errors") //set target
+            document.getElementById("errors").style.display = 'block'
+        })
+    </script>
 </html>
 {{ end }}
