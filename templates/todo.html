@@ -5,21 +5,15 @@
 >
     <input
         type="checkbox"
-        name="done"
         hx-put="/todos/{{ .Id }}/done"
-        {{
-        if
-        .Done
-        }}
-        checked
-        {{
-        end
-        }}
+        hx-target="#todo-{{ .Id }}"
+        hx-swap="outerHTML"
+        {{ if .Done }} checked {{ end }}
     />
     <label>{{ .Description }}</label>
     <div class="flex-1 flex justify-end space-x-2">
         <button
-            hx-put="/todos/{{ .Id }}/description"
+            hx-get="/todos/{{ .Id }}/edit"
             hx-target="#todo-{{ .Id }}"
             hx-swap="outerHTML"
             class="h-10 rounded px-8 bg-blue-500 text-blue-50"

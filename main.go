@@ -3,7 +3,6 @@ package main
 import (
     "html/template"
     "io"
-    "log"
     "strconv"
     "github.com/labstack/echo/v4"
     "github.com/labstack/echo/v4/middleware"
@@ -37,6 +36,7 @@ func main() {
     e.Renderer = newTemplate()
     e.File("/favicon.ico", "assets/favicon.ico")
 
+    next_id := 0
     state := map[string][]Todo{
         "Todos": {
             { Description: "Learn HTMX",     Id: 1, Done: false },
@@ -51,12 +51,14 @@ func main() {
 
     e.POST("/todos", func(c echo.Context) error {
         description := c.FormValue("description")
-        state["Todos"] = append(state["Todos"], Todo{
+        todo := Todo{
             Description: description,
-            Id: len(state["Todos"]) + 1,
+            Id: next_id,
             Done: false,
-        })
-        return c.Render(200, "todo", state["Todos"][len(state["Todos"])-1])
+        }
+        state["Todos"] = append(state["Todos"], todo)
+        next_id += 1
+        return c.Render(200, "todo", todo)
     })
 
     e.PUT("/todos/:id/done", func(c echo.Context) error {
@@ -64,24 +66,24 @@ func main() {
         id, _ := strconv.Atoi(idStr)
         for i, todo := range state["Todos"] {
             if id == todo.Id {
-                log.Print("found")
                 state["Todos"][i].Done = !state["Todos"][i].Done
+                return c.Render(200, "todo", state["Todos"][i])
             }
         }
-        return c.Render(200, "index", state)
+        return c.Render(404, "error", state) //error.html no exist
     })
 
     e.PUT("/todos/:id/description", func(c echo.Context) error {
-        description := c.FormValue("description")
         idStr := c.Param("id")
         id, _ := strconv.Atoi(idStr)
+        description := c.FormValue("description")
         for i, todo := range state["Todos"] {
             if id == todo.Id {
-                log.Print("found")
                 state["Todos"][i].Description = description
+                return c.Render(200, "todo", state["Todos"][i])
             }
         }
-        return c.Render(200, "index", state)
+        return c.Render(404, "error", state) //error.html no exist
     })
 
     e.DELETE("/todos/:id", func(c echo.Context) error {
@@ -89,12 +91,22 @@ func main() {
         id, _ := strconv.Atoi(idStr)
         for i, todo := range state["Todos"] {
             if id == todo.Id {
-                // Remove the todo from the list
                 state["Todos"] = append(state["Todos"][:i], state["Todos"][i+1:]...)
                 break
             }
         }
         return c.String(200, "")
+    })
+
+    e.GET("/todos/:id/edit", func(c echo.Context) error {
+        idStr := c.Param("id")
+        id, _ := strconv.Atoi(idStr)
+        for _, todo := range state["Todos"] {
+            if id == todo.Id {
+                return c.Render(200, "edit-todo", todo)
+            }
+        }
+        return c.Render(404, "error", state) //error.html no exist
     })
 
     e.Logger.Fatal(e.Start(":8080"))
